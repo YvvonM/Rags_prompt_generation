@@ -42,6 +42,32 @@ qa = ConversationalRetrievalChain.from_llm(
     verbose = True,
 )
 
+#performing similarity search
+import numpy as np
+from scipy.spatial.distance import cosine
+
+def search_and_answer(question, embeddings, db):
+    # Get the embeddings for the user's question
+    question_embedding = embeddings.encode([question])[0]
+    
+    # Perform cosine similarity search in the vector database
+    results = db.query(queries=[question_embedding], top_k=1)
+    
+    # Retrieve the most similar vector and its corresponding conversation
+    most_similar_vector = results.ids[0]
+    conversation = db.retrieve(ids=[most_similar_vector])
+    
+    # Extract the answer from the retrieved conversation
+    answer = conversation[0]['answer']  
+    
+    return answer
+
+# Example:
+user_question = "What is the challenge given"
+answer_from_db = search_and_answer(user_question, embeddings, db)
+print("Answer from database:", answer_from_db)
+
+
 import gradio as gr
 
 with gr.Blocks() as demo:
